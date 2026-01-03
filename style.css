@@ -1,0 +1,102 @@
+/* Reset e Base */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background-color: #070707; /* Fundo escuro */
+    color: #fff;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* Fonte padrão minimalista */
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+}
+
+/* Container Central */
+.container {
+    text-align: center;
+    position: relative;
+    width: 100%;
+    max-width: 800px;
+}
+
+/* Estilo do Texto Principal */
+#main-text {
+    font-size: 4rem;
+    margin-bottom: 20px;
+    letter-spacing: 2px;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+}
+
+/* Utilitários de Visibilidade */
+.hidden {
+    display: none !important;
+}
+
+/* --- Estilos Específicos das Teclas --- */
+
+/* Estilo Tecla B: Fonte Graffiti */
+/* Nota: Adicione sua @font-face aqui apontando para a pasta assets */
+.font-graffiti {
+    font-family: 'Courier New', Courier, monospace; /* Fallback enquanto não há fonte customizada */
+    color: #ff8c00; /* Laranja Basquete */
+    text-shadow: 4px 4px 0px #000, 6px 6px 0px #fff;
+    transform: rotate(-5deg);
+}
+
+/* Estilo Tecla E: Estilo Avatar/Natureza */
+.style-earth {
+    color: #4db6ac;
+    text-shadow: 0 0 10px #4db6ac;
+    font-family: 'Georgia', serif;
+}
+
+/* Container de Mídia */
+#media-container img {
+    max-width: 300px;
+    border-radius: 10%; /* Opcional: estilo arredondado */
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
+}
+
+/* Canvas do Jogo */
+canvas {
+    background-color: transparent;
+    border: 1px solid #333; /* Apenas para visualização da área */
+    display: block;
+    margin: 0 auto;
+}
+/* --- Efeito Tinta (Ink) --- */
+.ink-spot {
+    position: absolute;
+    border-radius: 50%; /* Faz virar um círculo */
+    pointer-events: none; /* O clique atravessa a mancha (não atrapalha novos cliques) */
+    transform: translate(-50%, -50%) scale(0); /* Começa pequena e centralizada no mouse */
+    animation: splash 0.3s forwards ease-out; /* Animação de crescimento */
+    opacity: 0.8;
+}
+
+@keyframes splash {
+    to {
+        transform: translate(-50%, -50%) scale(1); /* Cresce até o tamanho original */
+    }
+}
+/* --- YIN YANG (Imagem) --- */
+.yin-yang-img {
+    width: 320px;  /* Tamanho da imagem */
+    height: auto;  /* Mantém a proporção */
+    display: block; /* Necessário para usar margin auto */
+    margin: 0 auto; /* Centraliza horizontalmente */
+    /* Animação: nome | tempo | curva de velocidade | repetição */
+    animation: spin 4s linear infinite; 
+}
+
+/* Define a animação de girar (caso ainda não tenha no seu CSS) */
+@keyframes spin {
+    from { transform: rotate(0deg); box-shadow: none; }
+    to { transform: rotate(360deg); box-shadow: none;  }
+}
