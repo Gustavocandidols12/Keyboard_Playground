@@ -44,54 +44,145 @@ function resetScreen() {
 // --- Mapa de Ações das Teclas ---
 const keyActions = {
     'b': () => {
-        /* 
-           TECLA B - IDEIA:
-           - Mostra texto BASKETBALL com fonte graffiti
-           - Inicia mini-jogo simples de arremesso (círculo)
-           - Visual curto e automático
-        */
-        
-        // Configuração Visual
-        mainText.textContent = 'BASKETBALL';
-        mainText.classList.add('font-graffiti');
-        
-        // Ativar Canvas
-        canvas.classList.remove('hidden');
-        canvas.width = 400;
-        canvas.height = 300;
-        
-        // Lógica simples do jogo (Bola caindo)
-        let ballY = 50;
-        let speed = 0;
-        const gravity = 0.5;
-        
-        function animateBasket() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            
-            // Desenha a "bola"
-            ctx.beginPath();
-            ctx.arc(200, ballY, 20, 0, Math.PI * 2);
-            ctx.fillStyle = '#ff8c00';
-            ctx.fill();
-            ctx.closePath();
-            
-            // Física simples
-            if (ballY < 250) {
-                speed += gravity;
-                ballY += speed;
-                currentAnimationId = requestAnimationFrame(animateBasket);
-            } else {
-                // Efeito de "quicar" no chão
-                if (speed > 2) {
-                    speed = -speed * 0.9;
-                    ballY += speed;
-                    currentAnimationId = requestAnimationFrame(animateBasket);
-                }
-            }
+    // 1. Configuração do Texto e Canvas
+    mainText.textContent = 'BASKETBALL';
+    mainText.classList.add('font-graffiti'); // Certifique-se de ter essa classe CSS ou remova
+    
+    canvas.classList.remove('hidden');
+    canvas.width = 500; // Um pouco mais largo para o arremesso
+    canvas.height = 300;
 
+    // 2. Variáveis do Jogo
+    const gravity = 0.4;
+    const floorY = 280;
+    const hoopX = 420;
+    const hoopY = 120;
+    
+    // Estado da bola (Começa na esquerda inferior)
+    let ball = {
+        x: 50,
+        y: 200,
+        vx: 6.5, // Velocidade horizontal
+        vy: -11, // Impulso vertical (para cima)
+        radius: 18,
+        angle: 0,
+        scored: false
+    };
+
+    // 3. Funções de Desenho
+    const drawHoop = () => {
+        // Tabela (Backboard)
+        ctx.fillStyle = '#fff';
+        ctx.strokeStyle = '#999';
+        ctx.lineWidth = 2;
+        ctx.fillRect(hoopX + 10, hoopY - 40, 10, 80);
+        ctx.strokeRect(hoopX + 10, hoopY - 40, 10, 80);
+
+        // Aro (Rim)
+        ctx.beginPath();
+        ctx.moveTo(hoopX, hoopY);
+        ctx.lineTo(hoopX + 15, hoopY);
+        ctx.strokeStyle = '#d35400'; // Laranja escuro
+        ctx.lineWidth = 4;
+        ctx.stroke();
+
+        // Rede (Net - visual simplificado)
+        ctx.beginPath();
+        ctx.moveTo(hoopX, hoopY);
+        ctx.lineTo(hoopX + 5, hoopY + 25);
+        ctx.lineTo(hoopX + 15, hoopY);
+        ctx.strokeStyle = '#eee';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+        
+        // Poste
+        ctx.fillStyle = '#555';
+        ctx.fillRect(hoopX + 15, hoopY, 10, 160);
+    };
+
+    const drawBall = () => {
+        ctx.save(); // Salva o estado atual do canvas
+        
+        // Move o ponto de origem para o centro da bola para rotacionar
+        ctx.translate(ball.x, ball.y);
+        ctx.rotate(ball.angle);
+
+        // Corpo da bola
+        ctx.beginPath();
+        ctx.arc(0, 0, ball.radius, 0, Math.PI * 2);
+        ctx.fillStyle = '#e67e22'; // Laranja Basquete
+        ctx.fill();
+        ctx.strokeStyle = '#2c3e50'; // Preto/Azul escuro
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        // Linhas da bola (Cruz e Curva)
+        ctx.beginPath();
+        ctx.moveTo(0, -ball.radius);
+        ctx.lineTo(0, ball.radius);
+        ctx.moveTo(-ball.radius, 0);
+        ctx.lineTo(ball.radius, 0);
+        ctx.stroke();
+        
+        // Efeito visual de rotação
+        ball.angle += 0.1; // Aumenta o ângulo para o próximo frame
+
+        ctx.restore(); // Restaura o estado (desfaz a translação/rotação para o resto do cenário)
+    };
+
+    // 4. Loop de Animação
+    function animate() {
+        // Limpa tela
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Desenha cenário
+        // Chão
+        ctx.fillStyle = '#bdc3c7';
+        ctx.fillRect(0, floorY, canvas.width, canvas.height - floorY);
+        
+        drawHoop();
+        drawBall();
+
+        // Física
+        ball.vy += gravity;
+        ball.x += ball.vx;
+        ball.y += ball.vy;
+
+        // Detecção de "Cesta" (Simples: verificar se passou perto do aro descendo)
+        if (!ball.scored && 
+            ball.x > hoopX - 10 && ball.x < hoopX + 15 && 
+            ball.y > hoopY - 10 && ball.y < hoopY + 10 &&
+            ball.vy > 0) { // vy > 0 significa que a bola está descendo
+            
+            ball.scored = true;
+            mainText.textContent = "SWISH! 🏀";
+            mainText.style.color = '#2ecc71'; // Verde
         }
-        animateBasket();
-    },
+
+        // Colisão com o chão
+        if (ball.y + ball.radius > floorY) {
+            ball.y = floorY - ball.radius;
+            ball.vy *= -0.7; // Quica perdendo energia
+            ball.vx *= 0.9;  // Atrito no chão
+
+            // Se a bola estiver quase parada, para a animação
+            if (Math.abs(ball.vy) < 1 && Math.abs(ball.vx) < 0.1) {
+                return; // Encerra o loop
+            }
+        }
+
+        // Colisão com a tabela (rebote simples)
+        if (ball.x + ball.radius > hoopX + 10 && ball.y < hoopY) {
+            ball.vx *= -0.8;
+            ball.x = hoopX + 10 - ball.radius;
+        }
+
+        requestAnimationFrame(animate);
+    }
+
+    // Inicia
+    animate();
+},
 
     'e': () => {
         /*
@@ -297,6 +388,98 @@ const keyActions = {
         // 5. Coloca na tela
         mediaContainer.appendChild(img);
     },
+    
+    'd': () => {
+    // 1. Configuração Inicial
+    mainText.textContent = 'ROLING...';
+    mainText.style.letterSpacing = '2px';
+    canvas.classList.remove('hidden');
+    canvas.width = 300;
+    canvas.height = 300;
+
+    // Configurações visuais
+    const size = 200;
+    const x = (canvas.width - size) / 2; // Centraliza X
+    const y = (canvas.height - size) / 2; // Centraliza Y
+    
+    // Variáveis de Animação
+    let frames = 0;
+    const totalFrames = 20; // Duração da animação (aprox. 0.3 segundos)
+
+    // --- Função que desenha uma face específica ---
+    const desenharFace = (numero) => {
+        // Limpa o canvas
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // A. Corpo do dado (com sombra e cantos redondos)
+        ctx.shadowColor = "rgba(0,0,0,0.3)";
+        ctx.shadowBlur = 15;
+        ctx.shadowOffsetX = 8;
+        ctx.shadowOffsetY = 8;
+        
+        ctx.fillStyle = '#f8f9fa'; // Branco gelo
+        ctx.strokeStyle = '#2c3e50';
+        ctx.lineWidth = 3;
+
+        ctx.beginPath();
+        // roundRect(x, y, largura, altura, raio_borda)
+        ctx.roundRect(x, y, size, size, 25); 
+        ctx.fill();
+        ctx.stroke();
+
+        // B. Desenho das Bolinhas (Pips)
+        ctx.shadowColor = "transparent"; // Remove sombra interna para as bolinhas ficarem nítidas
+        ctx.fillStyle = '#d9534f'; // Cor das bolinhas (Vermelho suave)
+        
+        const center = size / 2;
+        const q1 = size * 0.25; // 25% da largura
+        const q3 = size * 0.75; // 75% da largura
+
+        // Helper para desenhar uma bolinha
+        const dot = (dx, dy) => {
+            ctx.beginPath();
+            ctx.arc(x + dx, y + dy, 18, 0, Math.PI * 2);
+            ctx.fill();
+        };
+
+        // Lógica de posicionamento (Matemática do dado)
+        // Centro (ímpares: 1, 3, 5)
+        if (numero % 2 === 1) dot(center, center);
+        
+        // Diagonais (maiores que 1)
+        if (numero > 1) { dot(q1, q1); dot(q3, q3); } // Superior Esq / Inferior Dir
+        
+        // Diagonais Inversas (maiores que 3)
+        if (numero > 3) { dot(q3, q1); dot(q1, q3); } // Superior Dir / Inferior Esq
+        
+        // Laterais (apenas o 6)
+        if (numero === 6) { dot(q1, center); dot(q3, center); }
+    };
+
+    // --- Função de Loop da Animação ---
+    const animarRolagem = () => {
+        // Gera um número aleatório para este frame
+        const numeroSorteado = Math.floor(Math.random() * 6) + 1;
+        
+        // Desenha esse número
+        desenharFace(numeroSorteado);
+
+        frames++;
+
+        if (frames < totalFrames) {
+            // Se ainda não acabou os frames, chama o próximo frame
+            requestAnimationFrame(animarRolagem);
+        } else {
+            // Animação terminou: Mostra o texto final
+            mainText.textContent = `DICE: ${numeroSorteado}`;
+            mainText.style.letterSpacing = '4px';
+        }
+    };
+
+    // Inicia a animação
+    animarRolagem();
+},
+
 };
 
 // --- Ouvinte de Eventos Global ---
