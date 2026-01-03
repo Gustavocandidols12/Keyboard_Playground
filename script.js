@@ -232,7 +232,7 @@ const keyActions = {
                 } else {
                     // Errou
                     let diferenca = Math.abs(100 - centesimos);
-                    mainText.textContent += ` — ERROU POR ${diferenca}`;
+                    mainText.textContent += ` — ERROU POR ${diferenca}, pare em 1.00 para ganhar`;
                     mainText.style.color = "#ff4444"; // Vermelho
                     document.body.style.backgroundColor = "#330000ff";
                 }
